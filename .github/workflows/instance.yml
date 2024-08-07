@@ -43,15 +43,15 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Create a log message (apply)
-              if: ${{ github.event.inputs.action == 'apply' }}
-              uses: port-labs/port-github-action@v1
-              with:
-                clientId: ${{ secrets.PORT_CLIENT_ID }}
-                clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-                baseUrl: https://api.getport.io
-                operation: PATCH_RUN
-                runId: ${{ fromJson(inputs.port_context).runId }}
-                logMessage: "Initiating creation of ECS cluster: ${{ github.event.inputs.Cluster_Name }}."
+        if: ${{ github.event.inputs.action == 'apply' }}
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          runId: ${{ fromJson(inputs.port_context).runId }}
+          logMessage: "Initiating creation of ECS cluster: ${{ github.event.inputs.Cluster_Name }}."
 
             # Configure AWS credentials. Please store the value of these keys in GitHub secrets
       - name: Configure AWS credentials
@@ -121,25 +121,25 @@ jobs:
 
 
       - name: Inform Port about the status of the ECS cluster creation
-              if: ${{ github.event.inputs.action == 'apply' }}
-              uses: port-labs/port-github-action@v1
-              with:
-                clientId: ${{ secrets.PORT_CLIENT_ID }}
-                clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-                baseUrl: https://api.getport.io
-                operation: PATCH_RUN
-                status: "SUCCESS"
-                runId: ${{ env.PORT_RUN_ID }}
-                logMessage: "ECS cluster creation has been completed: ${{ github.event.inputs.Cluster_Name }}"
+        if: ${{ github.event.inputs.action == 'apply' }}
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          status: "SUCCESS"
+          runId: ${{ env.PORT_RUN_ID }}
+          logMessage: "ECS cluster creation has been completed: ${{ github.event.inputs.Cluster_Name }}"
 
-            - name: Inform Port about the status of the ECS cluster destruction
-              if: ${{ github.event.inputs.action == 'destroy' }}
-              uses: port-labs/port-github-action@v1
-              with:
-                clientId: ${{ secrets.PORT_CLIENT_ID }}
-                clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-                baseUrl: https://api.getport.io
-                operation: PATCH_RUN
-                status: "SUCCESS"
-                runId: ${{ fromJson(inputs.port_context).runId }}
-                logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
+      - name: Inform Port about the status of the ECS cluster destruction
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          status: "SUCCESS"
+          runId: ${{ fromJson(inputs.port_context).runId }}
+          logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
