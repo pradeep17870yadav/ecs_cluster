@@ -20,10 +20,6 @@ on:
 jobs:
   manage_cluster: # Combine into a single job
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./terraform
 
     if: ${{ github.event.inputs.action == 'apply' || github.event.inputs.action == 'destroy' }}
 
