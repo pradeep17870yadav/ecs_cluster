@@ -28,7 +28,7 @@ jobs:
   apply-ecs-cluster:
     # Use the latest Ubuntu runner
     runs-on: ubuntu-latest
-    
+
     # Execute this job only if the action input is "apply"
     if: ${{ github.event.inputs.action == 'apply' }}
     # env:
@@ -42,7 +42,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Configure AWS credentials. Please store the value of these keys in GitHub secrets
+      - name: Create a log message (apply)
+              if: ${{ github.event.inputs.action == 'apply' }}
+              uses: port-labs/port-github-action@v1
+              with:
+                clientId: ${{ secrets.PORT_CLIENT_ID }}
+                clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+                baseUrl: https://api.getport.io
+                operation: PATCH_RUN
+                runId: ${{ fromJson(inputs.port_context).runId }}
+                logMessage: "Initiating creation of ECS cluster: ${{ github.event.inputs.Cluster_Name }}."
+
+            # Configure AWS credentials. Please store the value of these keys in GitHub secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -107,3 +118,28 @@ jobs:
       - name: Terraform Destroy
         run: terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
         working-directory: .
+
+
+      - name: Inform Port about the status of the ECS cluster creation
+              if: ${{ github.event.inputs.action == 'apply' }}
+              uses: port-labs/port-github-action@v1
+              with:
+                clientId: ${{ secrets.PORT_CLIENT_ID }}
+                clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+                baseUrl: https://api.getport.io
+                operation: PATCH_RUN
+                status: "SUCCESS"
+                runId: ${{ env.PORT_RUN_ID }}
+                logMessage: "ECS cluster creation has been completed: ${{ github.event.inputs.Cluster_Name }}"
+
+            - name: Inform Port about the status of the ECS cluster destruction
+              if: ${{ github.event.inputs.action == 'destroy' }}
+              uses: port-labs/port-github-action@v1
+              with:
+                clientId: ${{ secrets.PORT_CLIENT_ID }}
+                clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+                baseUrl: https://api.getport.io
+                operation: PATCH_RUN
+                status: "SUCCESS"
+                runId: ${{ fromJson(inputs.port_context).runId }}
+                logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
