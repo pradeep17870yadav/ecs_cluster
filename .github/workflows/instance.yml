@@ -77,7 +77,7 @@ jobs:
           terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -out=tfplan
           terraform show -json tfplan > tfplan.json
 
-          
+
       - name: Extract Resource Information
         id: extract
         run: |
@@ -96,6 +96,20 @@ jobs:
           fi
 
 
+      - name: Inform Port about the status of the ECS cluster creation
+        if: ${{ github.event.inputs.action == 'apply' }}
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          status: "SUCCESS"
+          runId:  ${{ fromJson(inputs.port_context).runId }}
+          logMessage: |
+            ECS cluster creation has been completed.
+            Cluster Name: ${{ github.event.inputs.Cluster_Name }}
+            Created resources: ${{ env.RESOURCE_INFO }}
       ###################################################
 
       # Apply the Terraform plan to create the EC2 instance
@@ -117,20 +131,7 @@ jobs:
       #     runId: ${{ env.PORT_RUN_ID }}
       #     logMessage: "ECS cluster creation has been completed: ${{ github.event.inputs.Cluster_Name }}"
 
-      - name: Inform Port about the status of the ECS cluster creation
-        if: ${{ github.event.inputs.action == 'apply' }}
-        uses: port-labs/port-github-action@v1
-        with:
-          clientId: ${{ secrets.PORT_CLIENT_ID }}
-          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.getport.io
-          operation: PATCH_RUN
-          status: "SUCCESS"
-          runId: ${{ env.PORT_RUN_ID }}
-          logMessage: |
-            ECS cluster creation has been completed.
-            Created resources: ${{ env.RESOURCE_INFO }}
-            Cluster Name: ${{ github.event.inputs.Cluster_Name }}
+
 
 
   # Job for destroying the EC2 instance
