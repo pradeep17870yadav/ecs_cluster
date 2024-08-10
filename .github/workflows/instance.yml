@@ -93,7 +93,7 @@ jobs:
             formatted_resource_info=${formatted_resource_info%,}  # Remove trailing comma
             
             # Replace commas with a special escape sequence to avoid issues with GitHub Actions
-            echo "RESOURCE_INFO=${formatted_resource_info//,/\\n}" >> $GITHUB_ENV
+            echo "RESOURCE_INFO=${formatted_resource_info//,/\n}" >> $GITHUB_ENV
           fi
 
 
