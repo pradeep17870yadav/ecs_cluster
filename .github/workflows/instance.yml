@@ -194,20 +194,26 @@
 #             Cluster Name: ${{ github.event.inputs.Cluster_Name }}
 
 
+# Define the name of the GitHub Action workflow
 name: ECS Cluster Deploy Drupal
 
+# This workflow is manually triggered using the GitHub Actions UI
 on:
   workflow_dispatch:
+    # Define inputs that are required for the manual trigger
     inputs:
       Cluster_Name:
-        description: 'Name of the ECS Cluster'
-        required: true
+        description: 'Name of the ECS Cluster'  # Name of the EC2 instance
+        required: true  # This input is required
       Region:
-        description: 'AWS Region for the instance'
-        required: true
+        description: 'AWS Region for the instance'  # AWS region where the instance will be created
+        required: true  # This input is required
+      # instanceType:
+      #   description: 'AWS instance type'  # Type of the EC2 instance (e.g., t2.micro)
+      #   required: true  # This input is required
       action:
-        description: 'Action to perform (apply/destroy)'
-        required: true
+        description: 'Action to perform (apply/destroy)'  # Action to be performed (create or delete the instance)
+        required: true  # This input is required
       port_context:
         description: "port_context"
         required: true
