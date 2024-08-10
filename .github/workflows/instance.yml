@@ -84,14 +84,13 @@ jobs:
         run: |
           terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
           -var Region=${{ github.event.inputs.Region }} \
-          -var = ${{github.event.inputs.drupal_app_name }} \
-          -var = ${{github.event.inputs.database_name}} \
-          -var = ${{github.event.inputs.database_user_name}} \
-          -var = ${{github.event.inputs.database_password}} \
+          -var app_name= ${{github.event.inputs.drupal_app_name }} \
+          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
+          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
+          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
           -out=tfplan
           terraform show -json tfplan > tfplan.json
-        working-directory: .
-        
+
       - name: Extract Resource Information
         id: extract
         run: |
@@ -132,10 +131,10 @@ jobs:
         run: |
           terraform apply -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
           -var Region=${{ github.event.inputs.Region }} \
-          -var = ${{github.event.inputs.drupal_app_name }} \
-          -var = ${{github.event.inputs.database_name}} \
-          -var = ${{github.event.inputs.database_user_name}} \
-          -var = ${{github.event.inputs.database_password}} \
+          -var app_name= ${{github.event.inputs.drupal_app_name }} \
+          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
+          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
+          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
           -auto-approve
         working-directory: .
     #########################################
@@ -184,17 +183,17 @@ jobs:
       - name: Terraform Format
         run: terraform fmt
         working-directory: .
+
       - name: Run Terraform Plan
         run: |
           terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
           -var Region=${{ github.event.inputs.Region }} \
-          -var = ${{github.event.inputs.drupal_app_name }} \
-          -var = ${{github.event.inputs.database_name}} \
-          -var = ${{github.event.inputs.database_user_name}} \
-          -var = ${{github.event.inputs.database_password}} \
+          -var app_name= ${{github.event.inputs.drupal_app_name }} \
+          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
+          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
+          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
           -out=tfplan
           terraform show -json tfplan > tfplan.json
-        working-directory: .
 
       - name: Extract Resource Information
         id: extract
@@ -218,10 +217,10 @@ jobs:
         run: |
           terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
           -var Region=${{ github.event.inputs.Region }} \
-          -var = ${{github.event.inputs.drupal_app_name }} \
-          -var = ${{github.event.inputs.database_name}} \
-          -var = ${{github.event.inputs.database_user_name}} \
-          -var = ${{github.event.inputs.database_password}} \
+          -var app_name= ${{github.event.inputs.drupal_app_name }} \
+          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
+          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
+          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
           -auto-approve
         working-directory: .
 
