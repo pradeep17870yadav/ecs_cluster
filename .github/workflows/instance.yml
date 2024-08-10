@@ -89,7 +89,8 @@ jobs:
           -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
           -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
           -out=tfplan
-          terraform show -json tfplan > tfplan.json
+          # terraform show -json tfplan > tfplan.json
+        working-directory: .
 
       - name: Extract Resource Information
         id: extract
@@ -193,7 +194,8 @@ jobs:
           -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
           -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
           -out=tfplan
-          terraform show -json tfplan > tfplan.json
+        # terraform show -json tfplan > tfplan.json
+        working-directory: .
 
       - name: Extract Resource Information
         id: extract
@@ -224,17 +226,17 @@ jobs:
           -auto-approve
         working-directory: .
 
-      # - name: Inform Port about the status of the ECS cluster destruction
-      #   if: ${{ github.event.inputs.action == 'destroy' }}
-      #   uses: port-labs/port-github-action@v1
-      #   with:
-      #     clientId: ${{ secrets.PORT_CLIENT_ID }}
-      #     clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-      #     baseUrl: https://api.getport.io
-      #     operation: PATCH_RUN
-      #     status: "SUCCESS"
-      #     runId: ${{ fromJson(inputs.port_context).runId }}
-      #     logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
+      - name: Inform Port about the status of the ECS cluster destruction
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          status: "SUCCESS"
+          runId: ${{ fromJson(inputs.port_context).runId }}
+          logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
 
       - name: Inform Port about the status of the ECS cluster destruction
         if: ${{ github.event.inputs.action == 'destroy' }}
