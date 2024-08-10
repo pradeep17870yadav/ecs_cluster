@@ -95,7 +95,7 @@ resource "aws_security_group" "ecs_sg" {
 
 # Create a task definition for Drupal and PostgreSQL
 resource "aws_ecs_task_definition" "drupal_task" {
-  family                   = "{var.app_name}_family"
+  family                   = "drupal"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
