@@ -123,7 +123,7 @@ jobs:
           baseUrl: https://api.getport.io
           operation: PATCH_RUN
           status: "SUCCESS"
-          runId: ${{ env.PORT_RUN_ID }}
+          runId:  ${{ fromJson(inputs.port_context).runId }}
           logMessage: |
             ECS cluster creation has been completed.
             Created resources: ${{ env.RESOURCE_INFO }}
