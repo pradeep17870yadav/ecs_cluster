@@ -89,7 +89,7 @@ jobs:
             echo "RESOURCE_INFO=none" >> $GITHUB_ENV
           else
             # Replace newlines with commas for a better environment variable format
-            resource_info=$(echo "$resource_info" | tr '\n')
+            resource_info=$(echo "$resource_info" | tr ',')
             # Remove trailing comma
             resource_info=${resource_info%,}
             echo "RESOURCE_INFO=${resource_info}" >> $GITHUB_ENV
