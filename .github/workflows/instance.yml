@@ -21,6 +21,14 @@ on:
       port_context:
         description: "port_context"
         required: true
+      drupal_app_name:
+        required: true
+      database_name:
+        required: true
+      database_user_name:
+        required: true
+      database_password:
+        required: true
 
 # Jobs to be executed in this workflow
 jobs:
@@ -74,9 +82,14 @@ jobs:
       #################################################
       - name: Run Terraform Plan
         run: |
-          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -out=tfplan
+          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
+          -var Region=${{ github.event.inputs.Region }} \
+          -var = ${{github.event.inputs.drupal_app_name }} \
+          -var = ${{github.event.inputs.database_name}} \
+          -var = ${{github.event.inputs.database_user_name}} \
+          -var = ${{github.event.inputs.database_password}} \
+          -out=tfplan
           terraform show -json tfplan > tfplan.json
-
 
       - name: Extract Resource Information
         id: extract
@@ -115,7 +128,13 @@ jobs:
 
       # Apply the Terraform plan to create the EC2 instance
       - name: Terraform Apply
-        run: terraform apply -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
+        run: terraform apply -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
+        -var Region=${{ github.event.inputs.Region }} \
+        -var = ${{github.event.inputs.drupal_app_name }} \
+        -var = ${{github.event.inputs.database_name}} \
+        -var = ${{github.event.inputs.database_user_name}} \
+        -var = ${{github.event.inputs.database_password}} \
+        -auto-approve
         working-directory: .
     #########################################
     ## Log for the getport
@@ -165,8 +184,13 @@ jobs:
         working-directory: .
       - name: Run Terraform Plan
         run: |
-          terraform init
-          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -out=tfplan
+          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
+          -var Region=${{ github.event.inputs.Region }} \
+          -var = ${{github.event.inputs.drupal_app_name }} \
+          -var = ${{github.event.inputs.database_name}} \
+          -var = ${{github.event.inputs.database_user_name}} \
+          -var = ${{github.event.inputs.database_password}} \
+          -out=tfplan
           terraform show -json tfplan > tfplan.json
 
       - name: Extract Resource Information
@@ -188,7 +212,13 @@ jobs:
 
       # Destroy the resources managed by Terraform
       - name: Terraform Destroy
-        run: terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
+        run: terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
+        -var Region=${{ github.event.inputs.Region }} \
+        -var = ${{github.event.inputs.drupal_app_name }} \
+        -var = ${{github.event.inputs.database_name}} \
+        -var = ${{github.event.inputs.database_user_name}} \
+        -var = ${{github.event.inputs.database_password}} \
+        -auto-approve
         working-directory: .
 
       # - name: Inform Port about the status of the ECS cluster destruction
