@@ -79,9 +79,20 @@ jobs:
       - name: Extract Resource Information
         id: extract
         run: |
-          # Use a tool like jq to extract relevant information from the JSON plan
+          # Use jq to extract relevant information from the JSON plan
           resource_info=$(jq -r '.resource_changes[] | select(.change.actions[] == "create") | .address' tfplan.json)
-          echo "RESOURCE_INFO=${resource_info}" >> $GITHUB_ENV
+
+          # Check if the variable is empty and handle accordingly
+          if [ -z "$resource_info" ]; then
+            echo "RESOURCE_INFO=none" >> $GITHUB_ENV
+          else
+            # Replace newlines with commas for a better environment variable format
+            resource_info=$(echo "$resource_info" | tr '\n' ',')
+            # Remove trailing comma
+            resource_info=${resource_info%,}
+            echo "RESOURCE_INFO=${resource_info}" >> $GITHUB_ENV
+          fi
+
       ###################################################
 
       # Apply the Terraform plan to create the EC2 instance
@@ -158,8 +169,17 @@ jobs:
         run: |
           created_resources=$(jq -r '.resource_changes[] | select(.change.actions[] == "create") | .address' tfplan.json)
           destroyed_resources=$(jq -r '.resource_changes[] | select(.change.actions[] == "destroy") | .address' tfplan.json)
-          echo "DESTROYED_RESOURCES=${destroyed_resources}" >> $GITHUB_ENV
-         
+
+          # Check if the variables are empty and handle accordingly
+          if [ -z "$destroyed_resources" ]; then
+            echo "DESTROYED_RESOURCES=none" >> $GITHUB_ENV
+          else
+            # Replace newlines with commas for a better environment variable format
+            destroyed_resources=$(echo "$destroyed_resources" | tr '\n' ',')
+            # Remove trailing comma
+            destroyed_resources=${destroyed_resources%,}
+            echo "DESTROYED_RESOURCES=${destroyed_resources}" >> $GITHUB_ENV
+          fi
 
       # Destroy the resources managed by Terraform
       - name: Terraform Destroy
