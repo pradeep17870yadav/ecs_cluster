@@ -74,7 +74,7 @@ jobs:
       #################################################
       - name: Run Terraform Plan
         run: |
-          terraform plan -out=tfplan
+          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -out=tfplan
           terraform show -json tfplan > tfplan.json
       - name: Extract Resource Information
         id: extract
@@ -150,7 +150,7 @@ jobs:
       - name: Run Terraform Plan
         run: |
           terraform init
-          terraform plan -out=tfplan
+          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -out=tfplan
           terraform show -json tfplan > tfplan.json
 
       - name: Extract Resource Information
