@@ -88,11 +88,12 @@ jobs:
           if [ -z "$resource_info" ]; then
             echo "RESOURCE_INFO=none" >> $GITHUB_ENV
           else
-            # Replace newlines with commas for a better environment variable format
-            resource_info=$resource_info
-            # Remove trailing comma
-            # resource_info=${resource_info%,}
-            echo "RESOURCE_INFO=${resource_info}" >> $GITHUB_ENV
+            # Ensure proper formatting: replace newlines with commas, then escape commas for GitHub Actions
+            formatted_resource_info=$(echo "$resource_info" | tr '\n' ',')
+            formatted_resource_info=${formatted_resource_info%,}  # Remove trailing comma
+            
+            # Replace commas with a special escape sequence to avoid issues with GitHub Actions
+            echo "RESOURCE_INFO=${formatted_resource_info//,/\\n}" >> $GITHUB_ENV
           fi
 
 
