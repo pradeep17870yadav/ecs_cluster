@@ -81,15 +81,16 @@ jobs:
 
       #################################################
       - name: Run Terraform Plan
+        env:
+          TF_VAR_cluster_name=${{ github.event.inputs.Cluster_Name }}
+          TF_VAR_Region=${{ github.event.inputs.Region }}
+          TF_VAR_app_name= ${{github.event.inputs.drupal_app_name }}
+          TF_VAR_DRUPAL_DB_NAME= ${{github.event.inputs.database_name}}
+          TF_VAR_DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}}
+          TF_VAR_DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}}
         run: |
-          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
-          -var Region=${{ github.event.inputs.Region }} \
-          -var app_name= ${{github.event.inputs.drupal_app_name }} \
-          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
-          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
-          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
-          -out=tfplan
-          # terraform show -json tfplan > tfplan.json
+          terraform plan -var -out=tfplan
+          terraform show -json tfplan > tfplan.json
         working-directory: .
 
       - name: Extract Resource Information
@@ -129,14 +130,15 @@ jobs:
 
       # Apply the Terraform plan to create the EC2 instance
       - name: Terraform Apply
+        env:
+          TF_VAR_cluster_name=${{ github.event.inputs.Cluster_Name }}
+          TF_VAR_Region=${{ github.event.inputs.Region }}
+          TF_VAR_app_name= ${{github.event.inputs.drupal_app_name }}
+          TF_VAR_DRUPAL_DB_NAME= ${{github.event.inputs.database_name}}
+          TF_VAR_DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}}
+          TF_VAR_DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}}
         run: |
-          terraform apply -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
-          -var Region=${{ github.event.inputs.Region }} \
-          -var app_name= ${{github.event.inputs.drupal_app_name }} \
-          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
-          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
-          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
-          -auto-approve
+          terraform apply -auto-approve
         working-directory: .
     #########################################
     ## Log for the getport
