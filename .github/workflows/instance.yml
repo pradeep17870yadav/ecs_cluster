@@ -167,7 +167,7 @@ jobs:
         id: extract
         run: |
           # Use jq to extract relevant information from the JSON plan
-          resource_info=$(jq -r '.resource_changes[] | select(.change.actions[] == "create") | .address' tfplan.json)
+          resource_info=$(jq -r '.resource_changes[] | select(.change.actions[] == "destroy") | .address' tfplan.json)
 
           # Check if the variable is empty and handle accordingly
           if [ -z "$resource_info" ]; then
