@@ -21,14 +21,6 @@ on:
       port_context:
         description: "port_context"
         required: true
-      drupal_app_name:
-        required: true
-      database_name:
-        required: true
-      database_user_name:
-        required: true
-      database_password:
-        required: true
 
 # Jobs to be executed in this workflow
 jobs:
@@ -81,17 +73,10 @@ jobs:
 
       #################################################
       - name: Run Terraform Plan
-        env:
-          TF_VAR_cluster_name=${{ github.event.inputs.Cluster_Name }}
-          TF_VAR_Region=${{ github.event.inputs.Region }}
-          TF_VAR_app_name= ${{github.event.inputs.drupal_app_name }}
-          TF_VAR_DRUPAL_DB_NAME= ${{github.event.inputs.database_name}}
-          TF_VAR_DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}}
-          TF_VAR_DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}}
         run: |
-          terraform plan -var -out=tfplan
+          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -out=tfplan
           terraform show -json tfplan > tfplan.json
-        working-directory: .
+
 
       - name: Extract Resource Information
         id: extract
@@ -103,12 +88,11 @@ jobs:
           if [ -z "$resource_info" ]; then
             echo "RESOURCE_INFO=none" >> $GITHUB_ENV
           else
-            # Ensure proper formatting: replace newlines with commas, then escape commas for GitHub Actions
-            formatted_resource_info=$(echo "$resource_info" | tr '\n' ',')
-            formatted_resource_info=${formatted_resource_info%,}  # Remove trailing comma
-            
-            # Replace commas with a special escape sequence to avoid issues with GitHub Actions
-            echo "RESOURCE_INFO=${formatted_resource_info//,\\n}" >> $GITHUB_ENV
+            # Replace newlines with commas for a better environment variable format
+            resource_info=$(echo "$resource_info" | tr '\n' ',')
+            # Remove trailing comma
+            resource_info=${resource_info%,}
+            echo "RESOURCE_INFO=${resource_info}" >> $GITHUB_ENV
           fi
 
 
@@ -130,15 +114,7 @@ jobs:
 
       # Apply the Terraform plan to create the EC2 instance
       - name: Terraform Apply
-        env:
-          TF_VAR_cluster_name=${{ github.event.inputs.Cluster_Name }}
-          TF_VAR_Region=${{ github.event.inputs.Region }}
-          TF_VAR_app_name= ${{github.event.inputs.drupal_app_name }}
-          TF_VAR_DRUPAL_DB_NAME= ${{github.event.inputs.database_name}}
-          TF_VAR_DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}}
-          TF_VAR_DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}}
-        run: |
-          terraform apply -auto-approve
+        run: terraform apply -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
         working-directory: .
     #########################################
     ## Log for the getport
@@ -186,18 +162,11 @@ jobs:
       - name: Terraform Format
         run: terraform fmt
         working-directory: .
-
       - name: Run Terraform Plan
         run: |
-          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
-          -var Region=${{ github.event.inputs.Region }} \
-          -var app_name= ${{github.event.inputs.drupal_app_name }} \
-          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
-          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
-          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
-          -out=tfplan
-        # terraform show -json tfplan > tfplan.json
-        working-directory: .
+          terraform init
+          terraform plan -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -out=tfplan
+          terraform show -json tfplan > tfplan.json
 
       - name: Extract Resource Information
         id: extract
@@ -218,27 +187,20 @@ jobs:
 
       # Destroy the resources managed by Terraform
       - name: Terraform Destroy
-        run: |
-          terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} \
-          -var Region=${{ github.event.inputs.Region }} \
-          -var app_name= ${{github.event.inputs.drupal_app_name }} \
-          -var DRUPAL_DB_NAME= ${{github.event.inputs.database_name}} \
-          -var DRUPAL_DB_USER= ${{github.event.inputs.database_user_name}} \
-          -var DRUPAL_DB_PASSWORD= ${{github.event.inputs.database_password}} \
-          -auto-approve
+        run: terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
         working-directory: .
 
-      - name: Inform Port about the status of the ECS cluster destruction
-        if: ${{ github.event.inputs.action == 'destroy' }}
-        uses: port-labs/port-github-action@v1
-        with:
-          clientId: ${{ secrets.PORT_CLIENT_ID }}
-          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.getport.io
-          operation: PATCH_RUN
-          status: "SUCCESS"
-          runId: ${{ fromJson(inputs.port_context).runId }}
-          logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
+      # - name: Inform Port about the status of the ECS cluster destruction
+      #   if: ${{ github.event.inputs.action == 'destroy' }}
+      #   uses: port-labs/port-github-action@v1
+      #   with:
+      #     clientId: ${{ secrets.PORT_CLIENT_ID }}
+      #     clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+      #     baseUrl: https://api.getport.io
+      #     operation: PATCH_RUN
+      #     status: "SUCCESS"
+      #     runId: ${{ fromJson(inputs.port_context).runId }}
+      #     logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
 
       - name: Inform Port about the status of the ECS cluster destruction
         if: ${{ github.event.inputs.action == 'destroy' }}

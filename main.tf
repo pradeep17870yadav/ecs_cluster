@@ -95,7 +95,7 @@ resource "aws_security_group" "ecs_sg" {
 
 # Create a task definition for Drupal and PostgreSQL
 resource "aws_ecs_task_definition" "drupal_task" {
-  family                   = "drupal"
+  family                   = "drupal-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
@@ -105,7 +105,7 @@ resource "aws_ecs_task_definition" "drupal_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "postgres_{var.app_name}"
+      name      = "postgres"
       image     = "postgres"
       essential = true
       portMappings = [{
@@ -115,20 +115,20 @@ resource "aws_ecs_task_definition" "drupal_task" {
       environment = [
         {
           name  = "POSTGRES_DB"
-          value = var.DRUPAL_DB_NAME
+          value = "drupal"
         },
         {
           name  = "POSTGRES_USER"
-          value = var.DRUPAL_DB_USER
+          value = "drupal"
         },
         {
           name  = "POSTGRES_PASSWORD"
-          value = var.DRUPAL_DB_PASSWORD
+          value = "drupalpassword"
         }
       ]
     },
     {
-      name      = "drupal_{var.app_name}"
+      name      = "drupal"
       image     = "drupal:10"
       essential = true
       portMappings = [{
@@ -138,19 +138,19 @@ resource "aws_ecs_task_definition" "drupal_task" {
       environment = [
         {
           name  = "DRUPAL_DB_HOST"
-          value = var.DRUPAL_DB_HOST
+          value = "postgres"
         },
         {
           name  = "DRUPAL_DB_NAME"
-          value = var.DRUPAL_DB_NAME
+          value = "drupal"
         },
         {
           name  = "DRUPAL_DB_USER"
-          value = var.DRUPAL_DB_USER
+          value = "drupal"
         },
         {
           name  = "DRUPAL_DB_PASSWORD"
-          value = var.DRUPAL_DB_PASSWORD
+          value = "drupalpassword"
         }
       ]
     }
