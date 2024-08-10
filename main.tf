@@ -105,7 +105,7 @@ resource "aws_ecs_task_definition" "drupal_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "postgres"
+      name      = "{var.app_name}-POSTGRES_DB"
       image     = "postgres"
       essential = true
       portMappings = [{
@@ -115,20 +115,20 @@ resource "aws_ecs_task_definition" "drupal_task" {
       environment = [
         {
           name  = "POSTGRES_DB"
-          value = "drupal"
+          value = var.POSTGRES_DB
         },
         {
           name  = "POSTGRES_USER"
-          value = "drupal"
+          value = var.POSTGRES_USER
         },
         {
           name  = "POSTGRES_PASSWORD"
-          value = "drupalpassword"
+          value = var.POSTGRES_PASSWORD
         }
       ]
     },
     {
-      name      = "drupal"
+      name      = "{var.app_name}-drupal"
       image     = "drupal:10"
       essential = true
       portMappings = [{
@@ -138,19 +138,19 @@ resource "aws_ecs_task_definition" "drupal_task" {
       environment = [
         {
           name  = "DRUPAL_DB_HOST"
-          value = "postgres"
+          value = "drupal"
         },
         {
           name  = "DRUPAL_DB_NAME"
-          value = "drupal"
+          value = var.POSTGRES_DB
         },
         {
           name  = "DRUPAL_DB_USER"
-          value = "drupal"
+          value = var.POSTGRES_USER
         },
         {
           name  = "DRUPAL_DB_PASSWORD"
-          value = "drupalpassword"
+          value = var.POSTGRES_PASSWORD
         }
       ]
     }
