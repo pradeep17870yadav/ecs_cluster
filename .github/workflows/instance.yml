@@ -147,11 +147,36 @@ jobs:
       - name: Terraform Format
         run: terraform fmt
         working-directory: .
-      
+      - name: Run Terraform Plan
+        run: |
+          terraform init
+          terraform plan -out=tfplan
+          terraform show -json tfplan > tfplan.json
+
+      - name: Extract Resource Information
+        id: extract
+        run: |
+          created_resources=$(jq -r '.resource_changes[] | select(.change.actions[] == "create") | .address' tfplan.json)
+          destroyed_resources=$(jq -r '.resource_changes[] | select(.change.actions[] == "destroy") | .address' tfplan.json)
+          echo "DESTROYED_RESOURCES=${destroyed_resources}" >> $GITHUB_ENV
+         
+
       # Destroy the resources managed by Terraform
       - name: Terraform Destroy
         run: terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
         working-directory: .
+
+      # - name: Inform Port about the status of the ECS cluster destruction
+      #   if: ${{ github.event.inputs.action == 'destroy' }}
+      #   uses: port-labs/port-github-action@v1
+      #   with:
+      #     clientId: ${{ secrets.PORT_CLIENT_ID }}
+      #     clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+      #     baseUrl: https://api.getport.io
+      #     operation: PATCH_RUN
+      #     status: "SUCCESS"
+      #     runId: ${{ fromJson(inputs.port_context).runId }}
+      #     logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
 
       - name: Inform Port about the status of the ECS cluster destruction
         if: ${{ github.event.inputs.action == 'destroy' }}
@@ -163,4 +188,7 @@ jobs:
           operation: PATCH_RUN
           status: "SUCCESS"
           runId: ${{ fromJson(inputs.port_context).runId }}
-          logMessage: "ECS cluster destruction has been completed: ${{ github.event.inputs.Cluster_Name }}"
+          logMessage: |
+            ECS cluster destruction has been completed.
+            Destroyed resources: ${{ env.DESTROYED_RESOURCES }}
+            Cluster Name: ${{ github.event.inputs.Cluster_Name }}
