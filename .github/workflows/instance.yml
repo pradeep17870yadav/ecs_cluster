@@ -31,12 +31,7 @@ jobs:
 
     # Execute this job only if the action input is "apply"
     if: ${{ github.event.inputs.action == 'apply' }}
-    # env:
-    #   CLUSTER_NAME: ${{ github.event.inputs.Cluster_Name }}
-    #   REGION: ${{ github.event.inputs.Region }}
-    #   ACTION: ${{ github.event.inputs.action }}
-    #   PORT_RUN_ID: ${{ fromJson(inputs.port_context).runId }}
-    # Define the steps for this job
+
     steps:
       # Checkout the code from the repository
       - name: Checkout code
@@ -76,10 +71,53 @@ jobs:
         run: terraform validate
         working-directory: .
 
+      #################################################
+      - name: Run Terraform Plan
+        run: |
+          terraform plan -out=tfplan
+          terraform show -json tfplan > tfplan.json
+      - name: Extract Resource Information
+        id: extract
+        run: |
+          # Use a tool like jq to extract relevant information from the JSON plan
+          resource_info=$(jq -r '.resource_changes[] | select(.change.actions[] == "create") | .address' tfplan.json)
+          echo "RESOURCE_INFO=${resource_info}" >> $GITHUB_ENV
+      ###################################################
+
       # Apply the Terraform plan to create the EC2 instance
       - name: Terraform Apply
         run: terraform apply -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
         working-directory: .
+    #########################################
+    ## Log for the getport
+    ##########################################
+      # - name: Inform Port about the status of the ECS cluster creation
+      #   if: ${{ github.event.inputs.action == 'apply' }}
+      #   uses: port-labs/port-github-action@v1
+      #   with:
+      #     clientId: ${{ secrets.PORT_CLIENT_ID }}
+      #     clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+      #     baseUrl: https://api.getport.io
+      #     operation: PATCH_RUN
+      #     status: "SUCCESS"
+      #     runId: ${{ env.PORT_RUN_ID }}
+      #     logMessage: "ECS cluster creation has been completed: ${{ github.event.inputs.Cluster_Name }}"
+
+      - name: Inform Port about the status of the ECS cluster creation
+        if: ${{ github.event.inputs.action == 'apply' }}
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: PATCH_RUN
+          status: "SUCCESS"
+          runId: ${{ env.PORT_RUN_ID }}
+          logMessage: |
+            ECS cluster creation has been completed.
+            Created resources: ${{ env.RESOURCE_INFO }}
+            Cluster Name: ${{ github.event.inputs.Cluster_Name }}
+
 
   # Job for destroying the EC2 instance
   destroy-ecs-cluster:
@@ -87,11 +125,7 @@ jobs:
     
     # Execute this job only if the action input is "destroy"
     if: ${{ github.event.inputs.action == 'destroy' }}
-    env:
-      CLUSTER_NAME: ${{ github.event.inputs.Cluster_Name }}
-      REGION: ${{ github.event.inputs.Region }}
-      ACTION: ${{ github.event.inputs.action }}
-      PORT_RUN_ID: ${{ fromJson(inputs.port_context).runId }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -118,19 +152,6 @@ jobs:
       - name: Terraform Destroy
         run: terraform destroy -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
         working-directory: .
-
-
-      - name: Inform Port about the status of the ECS cluster creation
-        if: ${{ github.event.inputs.action == 'apply' }}
-        uses: port-labs/port-github-action@v1
-        with:
-          clientId: ${{ secrets.PORT_CLIENT_ID }}
-          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.getport.io
-          operation: PATCH_RUN
-          status: "SUCCESS"
-          runId: ${{ env.PORT_RUN_ID }}
-          logMessage: "ECS cluster creation has been completed: ${{ github.event.inputs.Cluster_Name }}"
 
       - name: Inform Port about the status of the ECS cluster destruction
         if: ${{ github.event.inputs.action == 'destroy' }}
