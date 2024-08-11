@@ -113,20 +113,6 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -var cluster_name=${{ github.event.inputs.Cluster_Name }} -var Region=${{ github.event.inputs.Region }} -auto-approve
         working-directory: .
-    #########################################
-    ## Log for the getport
-    ##########################################
-      - name: Inform Port about the status of the ECS cluster creation
-        if: ${{ github.event.inputs.action == 'apply' }}
-        uses: port-labs/port-github-action@v1
-        with:
-          clientId: ${{ secrets.PORT_CLIENT_ID }}
-          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
-          baseUrl: https://api.getport.io
-          operation: PATCH_RUN
-          status: "SUCCESS"
-          runId: ${{ fromJson(inputs.port_context).runId }}
-          logMessage: "ECS cluster creation has been completed: ${{ github.event.inputs.Cluster_Name }}"
 
 ###########################################
 ## Deploy Druapal on ECS
