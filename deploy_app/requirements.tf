@@ -2,12 +2,12 @@ provider "aws" {
   region = var.Region
 }
 
-terraform {
-  backend "s3" {
-    bucket         = "terraform-tf-state-file-bucket-12"
-    key            = "terraform.tfstate"
-    region         = "us-west-2"
-    encrypt        = true
+data "terraform_remote_state" "other" {
+  backend = "s3"  # or "local", "azurerm", etc.
+  config = {
+    bucket =  "terraform-tf-state-file-bucket-12"
+    key    = "terraform.tfstate"
+    region = var.Region
   }
 }
 
