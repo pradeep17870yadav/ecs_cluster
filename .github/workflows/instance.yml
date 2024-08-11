@@ -168,11 +168,7 @@ jobs:
         run: terraform init
         working-directory: ./deploy_app
 
-      - name: Terraform Plan
-        run: terraform plan -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}"
-        working-directory: ./deploy_app
-
-      - name: Terraform Apply
+      - name: Terraform Destory
         run: terraform destroy -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" --auto-approve
         working-directory: ./deploy_app
 
