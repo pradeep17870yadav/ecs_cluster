@@ -26,6 +26,10 @@ jobs:
   # Job for applying the EC2 instance
   setup:
     runs-on: ubuntu-latest
+    steps:
+  # Checkout the code from the repository
+  - name: Checkout code
+    uses: actions/checkout@v2
 
   apply-ecs-cluster:
     # Use the latest Ubuntu runner
