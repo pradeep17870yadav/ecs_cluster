@@ -7,7 +7,7 @@ data "terraform_remote_state" "other" {
   config = {
     bucket =  "terraform-tf-state-file-bucket-12"
     key    = "terraform.tfstate"
-    region = var.Region
+    region = "us-west-2"
   }
 }
 
