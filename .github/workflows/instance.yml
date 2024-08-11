@@ -14,6 +14,12 @@ on:
       action:
         description: 'Action to perform (apply/destroy)'  # Action to be performed (create or delete the instance)
         required: true 
+      postgres_db:
+        required: true
+      postgres_user:
+        required: true
+      postgres_password:
+        required: true
       port_context:
         description: "port_context"
         required: true
@@ -137,11 +143,11 @@ jobs:
         working-directory: ./deploy_app
 
       - name: Terraform Plan
-        run: terraform plan -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}"
+        run: terraform plan -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" -var="POSTGRES_DB=${{ github.event.inputs.postgres_db }}" -var="POSTGRES_USER=${{ github.event.inputs.postgres_user }}" -var="POSTGRES_PASSWORd=${{ github.event.inputs.postgres_password }}"
         working-directory: ./deploy_app
 
       - name: Terraform Apply
-        run: terraform apply -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" --auto-approve
+        run: terraform apply -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" -var="POSTGRES_DB=${{ github.event.inputs.postgres_db }}" -var="POSTGRES_USER=${{ github.event.inputs.postgres_user }}" -var="POSTGRES_PASSWORd=${{ github.event.inputs.postgres_password }}" --auto-approve
         working-directory: ./deploy_app
 
 
@@ -168,7 +174,7 @@ jobs:
         working-directory: ./deploy_app
 
       - name: Terraform Destory
-        run: terraform destroy -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" --auto-approve
+        run: terraform destroy -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" -var="POSTGRES_DB=${{ github.event.inputs.postgres_db }}" -var="POSTGRES_USER=${{ github.event.inputs.postgres_user }}" -var="POSTGRES_PASSWORd=${{ github.event.inputs.postgres_password }}" --auto-approve
         working-directory: ./deploy_app
 
 ##############################

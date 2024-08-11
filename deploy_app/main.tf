@@ -105,15 +105,15 @@ resource "aws_ecs_task_definition" "drupal_task" {
       environment = [
         {
           name  = "POSTGRES_DB"
-          value = "drupal"
+          value = var.POSTGRES_DB
         },
         {
           name  = "POSTGRES_USER"
-          value = "drupal"
+          value = var.POSTGRES_USER
         },
         {
           name  = "POSTGRES_PASSWORD"
-          value = "drupalpassword"
+          value = var.POSTGRES_PASSWORD
         }
       ]
     },
@@ -132,15 +132,15 @@ resource "aws_ecs_task_definition" "drupal_task" {
         },
         {
           name  = "DRUPAL_DB_NAME"
-          value = "drupal"
+          value = var.POSTGRES_DB
         },
         {
           name  = "DRUPAL_DB_USER"
-          value = "drupal"
+          value = var.POSTGRES_USER
         },
         {
           name  = "DRUPAL_DB_PASSWORD"
-          value = "drupalpassword"
+          value = var.POSTGRES_PASSWORD
         }
       ]
     }
