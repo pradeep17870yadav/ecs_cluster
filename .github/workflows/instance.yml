@@ -115,6 +115,7 @@ jobs:
             ECS cluster creation has been completed.
             Cluster Name: ${{ github.event.inputs.Cluster_Name }}
             Created resources: ${{ env.RESOURCE_INFO }}
+
       ###################################################
 
       - name: Terraform Apply
@@ -153,6 +154,30 @@ jobs:
         run: terraform apply -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" -var="POSTGRES_DB=${{ github.event.inputs.postgres_db }}" -var="POSTGRES_USER=${{ github.event.inputs.postgres_user }}" -var="POSTGRES_PASSWORD=${{ github.event.inputs.postgres_password }}" --auto-approve
         working-directory: ./deploy_app
 
+      - name: Adding to Catalog 
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: UPSERT
+          identifier: ${{ github.event.inputs.Cluster_Name }}
+          title: ECS
+          blueprint: ecs_service
+          properties: |-
+            {
+              "arn": "string",
+              "cluster": "string",
+              "desiredCount": 0,
+              "iamRole": "https://example.com",
+              "launchType": "EC2",
+              "link": "https://example.com",
+              "loadBalancers": [],
+              "schedulingStrategy": "REPLICA",
+              "securityGroups": [],
+              "subnets": [],
+              "taskDefinition": "string"
+            }
 
 ###########################################
 ## Destroy Drupal App
@@ -179,6 +204,16 @@ jobs:
       - name: Terraform Destory
         run: terraform destroy -var="Region=${{ github.event.inputs.Region }}" -var="cluster_name=${{ github.event.inputs.Cluster_Name }}" -var="POSTGRES_DB=${{ github.event.inputs.postgres_db }}" -var="POSTGRES_USER=${{ github.event.inputs.postgres_user }}" -var="POSTGRES_PASSWORD=${{ github.event.inputs.postgres_password }}" --auto-approve
         working-directory: ./deploy_app
+
+      - name: Deleting from Catalog
+        uses: port-labs/port-github-action@v1
+        with:
+          clientId: ${{ secrets.PORT_CLIENT_ID }}
+          clientSecret: ${{ secrets.PORT_CLIENT_SECRET }}
+          baseUrl: https://api.getport.io
+          operation: DELETE
+          identifier: ${{ github.event.inputs.Cluster_Name }}
+          blueprint: ecs_service
 
 ##############################
 ## Destroy ECS Cluster
